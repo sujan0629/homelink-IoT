@@ -10,6 +10,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        primary: '#1C555E',
+        dark: '#061E29',
+        teal: '#5F9598',
+        light: '#F3F4F4',
+        white: '#FFFFFF',
+        textPrimary: '#061E29',
+        textSecondary: '#5F9598',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
