@@ -1,0 +1,189 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Platform,
+  KeyboardAvoidingView,
+  Pressable,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { PrimaryButton, InputField } from "../../../shared/components";
+
+interface RouteParams {
+  email?: string;
+  verificationCode?: string;
+}
+
+export const SetPasswordScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { email = "", verificationCode = "" } = (route.params as RouteParams) || {};
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  const validatePassword = () => {
+    if (password.length < 8) {
+      Alert.alert("Invalid Password", "Password must be at least 8 characters long");
+      return false;
+    }
+    if (!/[A-Z]/.test(password)) {
+      Alert.alert("Invalid Password", "Password must contain at least one uppercase letter");
+      return false;
+    }
+    if (!/[a-z]/.test(password)) {
+      Alert.alert("Invalid Password", "Password must contain at least one lowercase letter");
+      return false;
+    }
+    if (!/[0-9]/.test(password)) {
+      Alert.alert("Invalid Password", "Password must contain at least one number");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert("Password Mismatch", "Passwords do not match");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSetPassword = async () => {
+    if (!validatePassword()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // TODO: Replace with actual API endpoint
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      setIsSubmitting(false);
+      setIsAuthenticating(true);
+
+      setTimeout(() => {
+        navigation.reset({ index: 0, routes: [{ name: "Home" }] });
+        setTimeout(() => setIsAuthenticating(false), 300);
+      }, 200);
+    } catch (error: any) {
+      Alert.alert("Error", error?.message || "Something went wrong. Please try again.");
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-white">
+      <View className="px-4 mt-2 py-3 border-b border-gray-200">
+        <View className="flex-row items-center mt-2 mb-2 justify-between">
+          <Pressable onPress={() => navigation.goBack()} className="w-10" disabled={isSubmitting}>
+            <MaterialCommunityIcons name="chevron-left" size={26} color="#5F9598" />
+          </Pressable>
+
+          <View className="flex-1 items-center justify-center px-2">
+            <Text className="text-dark text-lg font-semibold text-center" numberOfLines={1}>
+              Set Password
+            </Text>
+          </View>
+
+          <View className="w-10" />
+        </View>
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 24, flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="flex-1">
+            <Text className="text-dark text-2xl font-bold text-center mb-3 mt-8">Create your password</Text>
+            <Text className="text-textSecondary text-base text-center mb-2">Set a secure password for</Text>
+            <Text className="text-dark text-base font-semibold text-center mb-12">{email || "your email"}</Text>
+
+            <InputField
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!passwordVisible}
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="password-new"
+              textContentType="newPassword"
+              rightIcon={
+                <MaterialCommunityIcons
+                  name={passwordVisible ? "eye-off" : "eye"}
+                  size={22}
+                  color="#5F9598"
+                />
+              }
+              onRightIconPress={() => setPasswordVisible(!passwordVisible)}
+              containerClassName="mb-6"
+            />
+            <Text className="text-textSecondary text-xs mt-[-10px] mb-4">
+              Must be 8+ characters with uppercase, lowercase, and number
+            </Text>
+
+            <InputField
+              label="Confirm Password"
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!confirmPasswordVisible}
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="password-new"
+              textContentType="newPassword"
+              rightIcon={
+                <MaterialCommunityIcons
+                  name={confirmPasswordVisible ? "eye-off" : "eye"}
+                  size={22}
+                  color="#5F9598"
+                />
+              }
+              onRightIconPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+              containerClassName="mb-6"
+            />
+
+            <PrimaryButton
+              title="Continue"
+              onPress={handleSetPassword}
+              loading={isSubmitting}
+              className="w-full mb-4"
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {isAuthenticating && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "#EDF5F0",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 999999,
+            elevation: 999999,
+          }}
+        >
+          <ActivityIndicator size="large" color="#1C555E" />
+        </View>
+      )}
+    </SafeAreaView>
+  );
+};
