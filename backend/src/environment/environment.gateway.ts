@@ -15,12 +15,12 @@ export class EnvironmentGateway {
     @WebSocketServer() private server: Server;
     @SubscribeMessage('sensor_data')
     handleMessage(client: any, payload: DHT22Data) {
-        console.log(payload);
-        this.server.emit("sensor_data", payload)
+        // console.log(payload);
+        this.server.to("mobile").emit("sensor_data", payload)
     }
 
     handleDisconnect(client: any) {
-        console.log("DISCONNECTED ", client)
+        // console.log("DISCONNECTED ", client)
         
     }
     

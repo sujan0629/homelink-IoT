@@ -20,6 +20,11 @@ export class SocketConnectionGateway implements OnGatewayConnection, OnGatewayDi
         client.join("device")
     }
 
+    @SubscribeMessage("mobile_connected")
+    handleMobileConnection(client: Socket) {
+        client.join("mobile");
+    }
+
     @SubscribeMessage("join_device")
     handlee(client: Socket, payload) {
         client.join(payload)

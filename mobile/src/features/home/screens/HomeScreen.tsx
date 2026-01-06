@@ -34,7 +34,12 @@ export function HomeScreen() {
   const [lightOn, setLightOn] = useState(false);
   const [automationActive, setAutomationActive] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState('LIVING ROOM');
-  const [dht22Data, setDht22Data] = useState<DHT22Data>();
+  const [dht22Data, setDht22Data] = useState<DHT22Data>({
+    temperature: 1,
+    humidity: 1,
+    timestamp: 1,
+    device: ""
+    });
   
   // Socket event handlers
   useEffect(() => {
@@ -44,7 +49,7 @@ export function HomeScreen() {
     socket.on('fan-on', (data: { on: boolean }) => {
       setFanOn(data.on);
     });
-    socket.on('toggle-light', (data: { on: boolean }) => {
+    socket.on('toggle_light', (data: { on: boolean }) => {
       setLightOn(data.on);
     });
     socket.on('water-pump-on', (data: { active: boolean }) => {
@@ -54,7 +59,7 @@ export function HomeScreen() {
       console.log("HEYYYY")
     })
     socket.on("sensor_data", (data: any)=>{
-      console.log(data)
+      // console.log(data)
       setDht22Data(data);
     })
 
@@ -79,7 +84,7 @@ export function HomeScreen() {
 
   const handleLightToggle = (value: boolean) => {
     setLightOn(value);
-    socket.emit('toggle-light', { on: value });
+    socket.emit('toggle_light', { on: value });
   };
 
   const handlePumpToggle = (value: boolean) => {
@@ -105,8 +110,8 @@ export function HomeScreen() {
 
         {/* Summary Card */}
         <SummaryCard
-          temperature={dht22Data.temperature||1}
-          humidity={dht22Data.humidity||1}
+          temperature={dht22Data?.temperature ?? 1}
+          humidity={dht22Data?.humidity ?? 1}
           onCheckStats={() => {
             navigation.navigate('Stats' as never);
           }}

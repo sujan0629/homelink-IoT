@@ -8,6 +8,6 @@ import { EnvironmentGateway } from './environment/environment.gateway';
 @Module({
     imports: [],
     controllers: [AppController],
-    providers: [AppService, SocketConnectionGateway, EnvironmentGateway],
+    providers: [AppService, SocketConnectionGateway, EnvironmentGateway, LightGateway],
 })
 export class AppModule { }

@@ -18,9 +18,10 @@ export class LightGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return 'Hello world!';
     }
 
-    @SubscribeMessage("toggle-light")
+    @SubscribeMessage("toggle_light")
     handleLightOn(client: Socket, payload: {on: boolean}){
-        this.server.to("light-device").emit("light-on", {isOn: true});
+        console.log("WOrking")
+        this.server.to("device").emit("toggle_light", payload);
     }
     
     
