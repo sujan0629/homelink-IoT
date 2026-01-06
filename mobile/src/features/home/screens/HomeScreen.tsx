@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import type {DHT22Data} from "@shared/src/types/DHT22/DHT22"
+
 import {
   HouseSelector,
   Greeting,
@@ -32,7 +34,8 @@ export function HomeScreen() {
   const [lightOn, setLightOn] = useState(false);
   const [automationActive, setAutomationActive] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState('LIVING ROOM');
-
+  const [dht22Data, setDht22Data] = useState<DHT22Data>();
+  
   // Socket event handlers
   useEffect(() => {
     socket.on('door-on', (data: { locked: boolean }) => {
@@ -41,18 +44,26 @@ export function HomeScreen() {
     socket.on('fan-on', (data: { on: boolean }) => {
       setFanOn(data.on);
     });
-    socket.on('light-on', (data: { on: boolean }) => {
+    socket.on('toggle-light', (data: { on: boolean }) => {
       setLightOn(data.on);
     });
     socket.on('water-pump-on', (data: { active: boolean }) => {
       setAutomationActive(data.active);
     });
+    socket.on("message", ()=>{
+      console.log("HEYYYY")
+    })
+    socket.on("sensor_data", (data: any)=>{
+      console.log(data)
+      setDht22Data(data);
+    })
 
     return () => {
       socket.off('door-pump-on');
       socket.off('fan-on');
       socket.off('light-on');
       socket.off('water-pump-on');
+      socket.off('sensor_data')
     };
   }, []);
 
@@ -94,8 +105,8 @@ export function HomeScreen() {
 
         {/* Summary Card */}
         <SummaryCard
-          temperature={24}
-          humidity={45}
+          temperature={dht22Data.temperature||1}
+          humidity={dht22Data.humidity||1}
           onCheckStats={() => {
             navigation.navigate('Stats' as never);
           }}
