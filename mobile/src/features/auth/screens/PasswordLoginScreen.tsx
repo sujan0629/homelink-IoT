@@ -11,6 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { PrimaryButton, SecondaryButton, InputField } from "../../../shared/components";
+import api from "../../../lib/axios";
+import { useAuthStore } from "../../../stores/authStore";
 
 interface RouteParams {
   email?: string;
@@ -35,18 +37,26 @@ export const PasswordLoginScreen: React.FC = () => {
     setIsLoggingIn(true);
 
     try {
-      // TODO: Replace with actual API endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      const response = await api.post("/auth/login", {
+        email: email.trim(),
+        password,
+      });
+
+      const { user, token } = response.data;
+
+      // Store auth state using Zustand (map _id to id)
+      useAuthStore.getState().login({ ...user, id: user._id }, token);
 
       setIsLoggingIn(false);
       setIsAuthenticating(true);
 
+      // Navigate to home (auth store will handle persistence)
       setTimeout(() => {
         navigation.reset({ index: 0, routes: [{ name: "Home" }] });
         setTimeout(() => setIsAuthenticating(false), 300);
       }, 150);
     } catch (error: any) {
-      Alert.alert("Login Failed", error?.message || "Invalid credentials. Please try again.");
+      Alert.alert("Login Failed", error.response?.data?.message || "Invalid credentials. Please try again.");
       setIsLoggingIn(false);
     }
   };
@@ -55,7 +65,7 @@ export const PasswordLoginScreen: React.FC = () => {
     <SafeAreaView className="flex-1 bg-white">
       <View className="px-4 mt-2 py-3 border-b border-gray-200">
         <View className="flex-row items-center mt-2 mb-2 justify-between">
-          <Pressable onPress={() => navigation.goBack()} className="w-10">
+          <Pressable onPress={() => navigation.goBack()} className="w-10" disabled={isLoggingIn}>
             <MaterialCommunityIcons name="chevron-left" size={26} color="#5F9598" />
           </Pressable>
 
@@ -97,6 +107,7 @@ export const PasswordLoginScreen: React.FC = () => {
               />
             }
             onRightIconPress={() => setPasswordVisible(!passwordVisible)}
+            editable={!isLoggingIn}
           />
 
           <PrimaryButton
@@ -107,7 +118,7 @@ export const PasswordLoginScreen: React.FC = () => {
           />
 
           <View className="mt-4">
-            <Pressable onPress={() => {}} className="py-2">
+            <Pressable onPress={() => {}} className="py-2" disabled={isLoggingIn}>
               <Text className="text-center text-xs text-textSecondary">
                 Dont remember your password? <Text className="text-primary font-semibold">Reset your password</Text>
               </Text>

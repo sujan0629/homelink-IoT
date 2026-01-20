@@ -14,10 +14,10 @@ import { InsightsScreen } from './features/insights';
 import { AiAutomationScreen } from './features/ai-automation';
 import { AdvancedScreen } from './features/advanced';
 import { AuthEmailScreen } from './features/auth/screens/AuthEmailScreen';
-import { EmailSentScreen } from './features/auth/screens/EmailSentScreen';
 import { PasswordLoginScreen } from './features/auth/screens/PasswordLoginScreen';
 import { VerifyCodeScreen } from './features/auth/screens/VerifyCodeScreen';
 import { SetPasswordScreen } from './features/auth/screens/SetPasswordScreen';
+import { useAuthStore } from './stores/authStore';
 
 console.log('🟡 InsightsScreen imported:', InsightsScreen?.name);
 console.log('🟡 StatsScreen imported:', StatsScreen?.name);
@@ -34,11 +34,14 @@ export default function RootLayout() {
     'Inter-Bold': require('../assets/fonts/Inter_18pt-Bold.ttf'),
   });
 
+  const { isAuthenticated, isLoading, setLoading } = useAuthStore();
+
   useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
+      setLoading(false);
     }
-  }, [loaded, error]);
+  }, [loaded, error, setLoading]);
 
   useEffect(() => {
     if (loaded) {
@@ -48,7 +51,8 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded && !error) {
+  // Show loading screen while fonts are loading or auth state is being determined
+  if (!loaded && !error || isLoading) {
     return null;
   }
 
@@ -57,55 +61,74 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar barStyle="dark-content" backgroundColor="#F3F4F4" />
         <NavigationContainer>
-          <Stack.Navigator
-            id="root"
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: '#F3F4F4' },
-            }}
-            initialRouteName="Welcome"
-          >
-            <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="AuthEmail" component={AuthEmailScreen} />
-            <Stack.Screen name="EmailSent" component={EmailSentScreen} />
-            <Stack.Screen name="PasswordLogin" component={PasswordLoginScreen} />
-            <Stack.Screen name="VerifyCode" component={VerifyCodeScreen} />
-            <Stack.Screen name="SetPassword" component={SetPasswordScreen} />
-            <Stack.Screen name="Stats" component={StatsScreen} />
-            <Stack.Screen 
-              name="Home" 
-              component={HomeScreen}
-              options={{ 
-                animation: 'fade',
-                animationDuration: 150
+          {isAuthenticated ? (
+            // Authenticated user - show main app
+            <Stack.Navigator
+              id="authenticated-stack"
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: '#F3F4F4' },
               }}
-            />
-            <Stack.Screen 
-              name="Insights" 
-              component={InsightsScreen}
-              options={{ 
-                animation: 'fade',
-                animationDuration: 150
+              initialRouteName="Home"
+            >
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{
+                  animation: 'fade',
+                  animationDuration: 150
+                }}
+              />
+              <Stack.Screen
+                name="Stats"
+                component={StatsScreen}
+                options={{
+                  animation: 'fade',
+                  animationDuration: 150
+                }}
+              />
+              <Stack.Screen
+                name="Insights"
+                component={InsightsScreen}
+                options={{
+                  animation: 'fade',
+                  animationDuration: 150
+                }}
+              />
+              <Stack.Screen
+                name="AiAutomation"
+                component={AiAutomationScreen}
+                options={{
+                  animation: 'fade',
+                  animationDuration: 150
+                }}
+              />
+              <Stack.Screen
+                name="Advanced"
+                component={AdvancedScreen}
+                options={{
+                  animation: 'fade',
+                  animationDuration: 150
+                }}
+              />
+            </Stack.Navigator>
+          ) : (
+            // Unauthenticated user - show auth flow
+            <Stack.Navigator
+              id="auth-stack"
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: '#F3F4F4' },
               }}
-            />
-            <Stack.Screen 
-              name="AiAutomation" 
-              component={AiAutomationScreen}
-              options={{ 
-                animation: 'fade',
-                animationDuration: 150
-              }}
-            />
-            <Stack.Screen 
-              name="Advanced" 
-              component={AdvancedScreen}
-              options={{ 
-                animation: 'fade',
-                animationDuration: 150
-              }}
-            />
-               
-          </Stack.Navigator>
+              initialRouteName="Welcome"
+            >
+              <Stack.Screen name="Welcome" component={WelcomeScreen} />
+              <Stack.Screen name="AuthEmail" component={AuthEmailScreen} />
+              <Stack.Screen name="PasswordLogin" component={PasswordLoginScreen} />
+              <Stack.Screen name="VerifyCode" component={VerifyCodeScreen} />
+              <Stack.Screen name="SetPassword" component={SetPasswordScreen} />
+            </Stack.Navigator>
+          )}
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>

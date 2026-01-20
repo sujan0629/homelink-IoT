@@ -7,6 +7,7 @@ import {
   AdvancedFanCard,
   AdvancedDoorCard,
   AdvancedWaterPumpCard,
+  AdvancedLogoutCard,
 } from '../components';
 
 export function AdvancedScreen() {
@@ -108,6 +109,11 @@ export function AdvancedScreen() {
                 onWaterLevelThresholdChange={setPumpWaterLevelThreshold}
                 onBiometricsChange={setPumpBiometrics}
               />
+            </View>
+
+            {/* Account Settings */}
+            <View className="bg-white rounded-xl p-4 border border-gray-100 mb-4">
+              <AdvancedLogoutCard />
             </View>
           </View>
         </View>
