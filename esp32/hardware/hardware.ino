@@ -4,14 +4,14 @@
 #include "DHT.h"
 
 // WiFi credentials
-const char* ssid     = "Connect With God_2.4";
-const char* password = "mabhandin@";
+const char* ssid     = "yashwant";
+const char* password = "1234567890";
 
 // Nested JSON buffer size
 #define JSON_BUFFER_SIZE 1024
 
 // Socket.IO server config
-const char* socketIO_host = "192.168.1.104";  // replace with your server IP
+const char* socketIO_host = "10.110.132.7";  // replace with your server IP
 const uint16_t socketIO_port = 3000;         // your backend port
 
 // Setup DHT22

@@ -1,8 +1,8 @@
 import { io } from 'socket.io-client';
 
 // const SOCKET_URL = 'http://localhost:3000';
-// const SOCKET_URL = 'http://10.110.132.7:3000';
-const SOCKET_URL = 'http://192.168.1.104:3000';
+const SOCKET_URL = 'http://10.110.132.7:3000';
+// const SOCKET_URL = 'http://192.168.1.104:3000';
 
 export const socket = io(SOCKET_URL, {
   transports: ['websocket'],
