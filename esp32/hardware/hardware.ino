@@ -19,6 +19,9 @@ const uint16_t socketIO_port = 3000;         // your backend port
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
+//led
+#define LEDPIN 2
+
 // SocketIOclient instance
 SocketIOclient socketIO;
 
@@ -57,6 +60,8 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t *payload, size_t length) 
       Serial.print("📩 Event received: ");
       Serial.write(payload, length);
       Serial.println();
+
+      handleSocketEvent(payload, length);
       break;
     }
 
@@ -100,10 +105,72 @@ void sendSensorData() {
   Serial.println(out);
 }
 
+void onLightToggle(JsonObject data) {
+  Serial.println("📨 Received: light_toggle");
+  if (data.containsKey("on")) {
+    bool state = data["on"];
+    Serial.print("💡 LED state: ");
+    Serial.println(state ? "ON" : "OFF");
+    // Control your LED here
+    digitalWrite(LEDPIN, state ? HIGH : LOW);
+  }
+}
+
+//Routing Events
+
+
+void handleSocketEvent(uint8_t *payload, size_t length) {
+  // Parse the incoming Socket.IO event
+  DynamicJsonDocument doc(JSON_BUFFER_SIZE);
+  DeserializationError error = deserializeJson(doc, payload, length);
+  
+  if (error) {
+    Serial.print("❌ JSON parse error: ");
+    Serial.println(error.c_str());
+    return;
+  }
+  
+  // Socket.IO events come as an array: ["event_name", {...data}]
+  if (!doc.is<JsonArray>()) {
+    Serial.println("⚠️ Expected JSON array");
+    return;
+  }
+  
+  JsonArray arr = doc.as<JsonArray>();
+  if (arr.size() < 1) {
+    Serial.println("⚠️ Empty event array");
+    return;
+  }
+  
+  // Get event name (first element)
+  const char* eventName = arr[0];
+  
+  // Get event data (second element, if exists)
+  JsonObject eventData;
+  if (arr.size() > 1 && arr[1].is<JsonObject>()) {
+    eventData = arr[1].as<JsonObject>();
+  }
+  
+  Serial.print("🎯 Event: ");
+  Serial.println(eventName);
+  
+  // Route to appropriate handler
+  if (strcmp(eventName, "toggle_light") == 0) {
+    onLightToggle(eventData);
+  }
+  else {
+    Serial.print("⚠️ Unknown event: ");
+    Serial.println(eventName);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
 
+  pinMode(LEDPIN, OUTPUT);      // Set pin as output
+  digitalWrite(LEDPIN, LOW);    // Turn OFF by default
+  
   dht.begin();
   Serial.println("🌡️ DHT22 Initialized");
 
@@ -122,6 +189,7 @@ void setup() {
   socketIO.begin(socketIO_host, socketIO_port, "/socket.io/?EIO=3&transport=websocket");
   socketIO.onEvent(socketIOEvent);
   socketIO.setReconnectInterval(5000);
+
 }
 
 void loop() {
@@ -135,7 +203,7 @@ void loop() {
 
     // socketIO.sendEVENT("[\"join_device\", {\"locked\":true}]");
 
-    ''
+    
   }
 }
 

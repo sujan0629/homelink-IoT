@@ -4,6 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SocketConnectionGateway } from './common/socket-connection/socket-connection.gateway';
+import { LightGateway } from './light/light.gateway';
+import { EnvironmentGateway } from './environment/environment.gateway';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -15,6 +17,6 @@ import { AuthModule } from './auth/auth.module';
         AuthModule,
     ],
     controllers: [AppController],
-    providers: [AppService, SocketConnectionGateway],
+    providers: [AppService, SocketConnectionGateway, EnvironmentGateway, LightGateway],
 })
 export class AppModule { }
