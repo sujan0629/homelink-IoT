@@ -39,42 +39,49 @@ export function HomeScreen() {
     humidity: 1,
     timestamp: 1,
     device: ""
-    });
+  });
   
   // Socket event handlers
   useEffect(() => {
-    socket.on('door-on', (data: { locked: boolean }) => {
-      setDoorLocked(data.locked);
+    // Listen for door status updates from server
+    socket.on('toogle_door', (data: { open: boolean }) => {
+      setDoorLocked(!data.open); // inverted: open=false means locked=true
     });
+    
     socket.on('fan-on', (data: { on: boolean }) => {
       setFanOn(data.on);
     });
+    
     socket.on('toggle_light', (data: { on: boolean }) => {
       setLightOn(data.on);
     });
+    
     socket.on('water-pump-on', (data: { active: boolean }) => {
       setAutomationActive(data.active);
     });
-    socket.on("message", ()=>{
+    
+    socket.on("message", () => {
       console.log("HEYYYY")
-    })
-    socket.on("sensor_data", (data: any)=>{
-      // console.log(data)
+    });
+    
+    socket.on("sensor_data", (data: any) => {
       setDht22Data(data);
-    })
+    });
 
     return () => {
-      socket.off('door-pump-on');
+      socket.off('toogle_door');
       socket.off('fan-on');
-      socket.off('light-on');
+      socket.off('toggle_light');
       socket.off('water-pump-on');
-      socket.off('sensor_data')
+      socket.off('sensor_data');
+      socket.off('message');
     };
   }, []);
 
   const handleDoorToggle = (value: boolean) => {
     setDoorLocked(value);
-    socket.emit('toggle-door', { locked: value });
+    // Send 'open' command (inverted logic: locked=true means open=false)
+    socket.emit('toogle_door', { open: !value });
   };
 
   const handleFanToggle = (value: boolean) => {
@@ -100,7 +107,6 @@ export function HomeScreen() {
           houseName="My House"
           deviceCount={4}
           onPress={() => {
-            // TODO: Open house selector modal
             console.log('Select house');
           }}
         />

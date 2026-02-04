@@ -5,8 +5,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SocketConnectionGateway } from './common/socket-connection/socket-connection.gateway';
 import { LightGateway } from './light/light.gateway';
+import { DoorGateway } from './door/door.gateway';
 import { EnvironmentGateway } from './environment/environment.gateway';
 import { AuthModule } from './auth/auth.module';
+import { FanGateway } from './fan/fan.gateway';
 
 @Module({
     imports: [
@@ -17,6 +19,6 @@ import { AuthModule } from './auth/auth.module';
         AuthModule,
     ],
     controllers: [AppController],
-    providers: [AppService, SocketConnectionGateway, EnvironmentGateway, LightGateway],
+    providers: [AppService, SocketConnectionGateway, EnvironmentGateway, LightGateway, DoorGateway, FanGateway],
 })
 export class AppModule { }

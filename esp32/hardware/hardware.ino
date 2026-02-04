@@ -11,7 +11,8 @@ const char* password = "1234567890";
 #define JSON_BUFFER_SIZE 1024
 
 // Socket.IO server config
-const char* socketIO_host = "10.110.132.7";  // replace with your server IP
+
+const char* socketIO_host = "10.57.141.155";  // replace with your server IP
 const uint16_t socketIO_port = 3000;         // your backend port
 
 // Setup DHT22
@@ -20,7 +21,10 @@ const uint16_t socketIO_port = 3000;         // your backend port
 DHT dht(DHTPIN, DHTTYPE);
 
 //led
-#define LEDPIN 2
+#define LEDPIN 4
+#define DOORPIN 14
+#define FANPIN 18
+
 
 // SocketIOclient instance
 SocketIOclient socketIO;
@@ -104,7 +108,16 @@ void sendSensorData() {
   Serial.println("📤 Sensor data sent:");
   Serial.println(out);
 }
-
+void onDoorToogle(JsonObject data) {
+  Serial.println("📨 Received: toogle_door");
+  if (data.containsKey("open")) {
+    bool isOpen = data["open"];
+    bool ledState = !isOpen; // LED should light when door reports closed
+    Serial.print("🚪 Door LED state: ");
+    Serial.println(ledState ? "ON" : "OFF");
+    digitalWrite(DOORPIN, ledState ? HIGH : LOW);
+  }
+}
 void onLightToggle(JsonObject data) {
   Serial.println("📨 Received: light_toggle");
   if (data.containsKey("on")) {
@@ -113,6 +126,16 @@ void onLightToggle(JsonObject data) {
     Serial.println(state ? "ON" : "OFF");
     // Control your LED here
     digitalWrite(LEDPIN, state ? HIGH : LOW);
+  }
+}
+
+void onFanToggle(JsonObject data) {
+  Serial.println("📨 Received: toggle_fan");
+  if (data.containsKey("on")) {
+    bool state = data["on"];
+    Serial.print("🌀 Fan state: ");
+    Serial.println(state ? "ON" : "OFF");
+    digitalWrite(FANPIN, state ? HIGH : LOW);
   }
 }
 
@@ -158,6 +181,12 @@ void handleSocketEvent(uint8_t *payload, size_t length) {
   if (strcmp(eventName, "toggle_light") == 0) {
     onLightToggle(eventData);
   }
+  else if (strcmp(eventName, "toogle_door") == 0) {
+    onDoorToogle(eventData);
+  }
+  else if (strcmp(eventName, "toggle_fan") == 0) {
+    onFanToggle(eventData);
+  }
   else {
     Serial.print("⚠️ Unknown event: ");
     Serial.println(eventName);
@@ -167,7 +196,10 @@ void handleSocketEvent(uint8_t *payload, size_t length) {
 void setup() {
   Serial.begin(115200);
   delay(1000);
-
+  pinMode(DOORPIN,OUTPUT);
+  digitalWrite(DOORPIN,LOW);
+  pinMode(FANPIN, OUTPUT);
+  digitalWrite(FANPIN, LOW);
   pinMode(LEDPIN, OUTPUT);      // Set pin as output
   digitalWrite(LEDPIN, LOW);    // Turn OFF by default
   
