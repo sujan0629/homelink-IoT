@@ -13,6 +13,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { PrimaryButton, InputField } from "../../../shared/components";
+import api from "../../../lib/axios";
+import { useAuthStore } from "../../../stores/authStore";
 
 interface RouteParams {
   email?: string;
@@ -61,8 +63,15 @@ export const SetPasswordScreen: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // TODO: Replace with actual API endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await api.post("/auth/signup", {
+        email: email.trim(),
+        password,
+      });
+
+      const { user, token } = response.data;
+
+      // Store auth state using Zustand (map _id to id)
+      useAuthStore.getState().login({ ...user, id: user._id }, token);
 
       setIsSubmitting(false);
       setIsAuthenticating(true);
@@ -72,7 +81,7 @@ export const SetPasswordScreen: React.FC = () => {
         setTimeout(() => setIsAuthenticating(false), 300);
       }, 200);
     } catch (error: any) {
-      Alert.alert("Error", error?.message || "Something went wrong. Please try again.");
+      Alert.alert("Error", error.response?.data?.message || "Something went wrong. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -130,6 +139,7 @@ export const SetPasswordScreen: React.FC = () => {
               }
               onRightIconPress={() => setPasswordVisible(!passwordVisible)}
               containerClassName="mb-6"
+              editable={!isSubmitting}
             />
             <Text className="text-textSecondary text-xs mt-[-10px] mb-4">
               Must be 8+ characters with uppercase, lowercase, and number
@@ -154,6 +164,7 @@ export const SetPasswordScreen: React.FC = () => {
               }
               onRightIconPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
               containerClassName="mb-6"
+              editable={!isSubmitting}
             />
 
             <PrimaryButton

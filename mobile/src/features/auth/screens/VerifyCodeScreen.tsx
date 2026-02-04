@@ -11,18 +11,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { PrimaryButton, SecondaryButton } from "../../../shared/components";
+import api from "../../../lib/axios";
 
 interface RouteParams {
   email?: string;
+  isSignup?: boolean;
 }
 
 export const VerifyCodeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { email = "" } = (route.params as RouteParams) || {};
+  const { email = "", isSignup = false } = (route.params as RouteParams) || {};
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
   const handleCodeChange = (text: string, index: number) => {
@@ -54,26 +57,48 @@ export const VerifyCodeScreen: React.FC = () => {
     setIsVerifying(true);
 
     try {
-      // TODO: Replace with actual API endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await api.post("/auth/verify-code", {
+        email: email.trim(),
+        code: fullCode,
+      });
 
-      navigation.navigate("SetPassword", { email, verificationCode: fullCode });
+      // Code is verified - go to set password for signup
+      if (isSignup) {
+        navigation.navigate("SetPassword", { email, verificationCode: fullCode });
+      } else {
+        // For login with code verification (if needed)
+        navigation.reset({ index: 0, routes: [{ name: "Home" }] });
+      }
     } catch (error: any) {
-      Alert.alert("Verification Failed", error?.message || "Invalid code. Please try again.");
-    } finally {
+      Alert.alert("Verification Failed", error.response?.data?.message || "Invalid code. Please try again.");
       setIsVerifying(false);
     }
   };
 
   const handleResendCode = async () => {
-    Alert.alert("Code Sent", "A new verification code has been sent to your email.");
+    setIsResending(true);
+
+    try {
+      await api.post("/auth/resend-code", {
+        email: email.trim(),
+      });
+
+      // Reset code fields
+      setCode(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+      Alert.alert("Success", "Verification code has been resent to your email.");
+    } catch (error: any) {
+      Alert.alert("Error", error.response?.data?.message || "Failed to resend code");
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="px-4 mt-2 py-3 border-b border-gray-200">
         <View className="flex-row items-center mt-2 mb-2 justify-between">
-          <Pressable onPress={() => navigation.goBack()} className="w-10" disabled={isVerifying}>
+          <Pressable onPress={() => navigation.goBack()} className="w-10" disabled={isVerifying || isResending}>
             <MaterialCommunityIcons name="chevron-left" size={26} color="#5F9598" />
           </Pressable>
 
@@ -119,6 +144,7 @@ export const VerifyCodeScreen: React.FC = () => {
                     autoComplete="one-time-code"
                     textContentType="oneTimeCode"
                     style={{ flex: 1 }}
+                    editable={!isVerifying && !isResending}
                   />
                 </View>
               ))}
@@ -133,7 +159,7 @@ export const VerifyCodeScreen: React.FC = () => {
           />
 
           <SecondaryButton
-            title="Resend code"
+            title={isResending ? "Resending..." : "Resend code"}
             onPress={handleResendCode}
             className="w-full"
           />
