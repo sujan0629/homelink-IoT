@@ -1,6 +1,8 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:3000';
+// const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = 'http://10.57.141.155:3000';
+// const SOCKET_URL = 'http://192.168.1.104:3000';
 
 // Override console.error to suppress socket.io websocket errors
 const originalError = console.error;
@@ -22,6 +24,11 @@ export const socket = io(SOCKET_URL, {
   // Remove reconnectionAttempts limit - keep trying indefinitely
 });
 
+// Connection loggingd
+socket.on('connect', () => console.log('Connected to server'));
+socket.on('disconnect', () => console.log('Disconnected from server'));
+socket.on('connect_error', (error) => console.error('Connection error:', error));
+socket.emit('mobile_connected');
 // Connection logging
 socket.on('connect', () => {
   console.log('✅ Connected to ESP32');

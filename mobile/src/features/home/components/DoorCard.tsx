@@ -14,13 +14,17 @@ export const DoorCard: React.FC<DoorCardProps> = ({ isLocked, onToggle }) => {
       style={{ width: '48%', borderColor: '#EDEDED' }}
     >
       <View className="mb-3">
-        <MaterialCommunityIcons name="door" size={28} color="#343434" />
+        <MaterialCommunityIcons 
+          name={isLocked ? 'lock' : 'lock-open'} 
+          size={28} 
+          color="#343434" 
+        />
       </View>
       
       <Text className="text-dark text-base font-semibold mb-1">Main Door</Text>
       <Text className="text-gray-400 text-xs mb-1">Status</Text>
       <Text className="text-gray-400 text-sm font-semibold mb-3">
-        {isLocked ? 'Locked' : 'Unlocked'}
+        {isLocked ? 'Unlocked' : 'Locked'}
       </Text>
       
       <View className="flex-row items-center justify-between">

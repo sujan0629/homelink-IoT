@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface SummaryCardProps {
-  temperature: number;
-  humidity: number;
+  temperature?: number;
+  humidity?: number;
   onCheckStats?: () => void;
 }
 
@@ -27,7 +27,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
           <View>
             <Text className="text-white opacity-70 text-xs mb-1.5">Temperature</Text>
             <View className="flex-row items-baseline gap-0.5">
-              <Text className="text-3xl font-bold text-white">{temperature}</Text>
+              <Text className="text-3xl font-bold text-white">{temperature||"loading..."}</Text>
               <Text className="text-white opacity-70 text-base">°C</Text>
             </View>
           </View>
@@ -37,7 +37,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
           <View>
             <Text className="text-white opacity-70 text-xs mb-1.5">Humidity</Text>
             <View className="flex-row items-baseline gap-0.5">
-              <Text className="text-3xl font-bold text-white">{humidity}</Text>
+              <Text className="text-3xl font-bold text-white">{humidity||"loading..."}</Text>
               <Text className="text-white opacity-70 text-base">%</Text>
             </View>
           </View>

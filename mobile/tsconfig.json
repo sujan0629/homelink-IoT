@@ -16,7 +16,8 @@
       "@/services": ["src/services"],
       "@/types": ["src/lib/types"],
       "@/config": ["src/config"],
-      "@/assets/*": ["src/assets/*"]
+      "@/assets/*": ["src/assets/*"],
+      "@shared/*": ["../shared/*"]
     }
   }
 }
