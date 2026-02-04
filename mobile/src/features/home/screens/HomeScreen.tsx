@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet from '@gorhom/bottom-sheet';
 import {
   HouseSelector,
   Greeting,
@@ -11,14 +13,20 @@ import {
   FanCard,
   LightCard,
   WaterPumpCard,
+  DeviceSelectionSheet,
 } from '../components';
 import { BottomNavigation } from '../../../shared/components';
 import { socket } from '../../../lib/socket';
+
+type Device = 'door' | 'fan' | 'light' | 'waterPump';
 
 export function HomeScreen() {
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState('Home');
   const [isConnected, setIsConnected] = useState(socket.connected);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const [selectedDevices, setSelectedDevices] = useState<Device[]>(['door', 'fan', 'light', 'waterPump']);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -107,21 +115,31 @@ export function HomeScreen() {
     socket.emit('toggle-pump', { active: value });
   };
 
+  const handleToggleDevice = (device: Device) => {
+    setSelectedDevices((prev) =>
+      prev.includes(device) ? prev.filter((d) => d !== device) : [...prev, device]
+    );
+  };
+
+  const handleOpenDeviceSelector = () => {
+    bottomSheetRef.current?.expand();
+    setIsSheetOpen(true);
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        {/* House Selector */}
-        <HouseSelector
-          houseName="My House"
-          deviceCount={4}
-          onPress={() => {
-            // TODO: Open house selector modal
-            console.log('Select house');
-          }}
-        />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+        <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+          {/* House Selector */}
+          <HouseSelector
+            houseName="My House"
+            deviceCount={selectedDevices.length}
+            onPress={handleOpenDeviceSelector}
+            isSheetOpen={isSheetOpen}
+          />
 
         {/* Connection Status */}
-        <View className={`mx-6 mb-4 p-3 rounded-lg ${isConnected ? 'bg-green-50' : 'bg-yellow-50'}`}>
+        <View className={`mx-6 mt-2 mb-4 p-3 rounded-lg ${isConnected ? 'bg-green-50' : 'bg-yellow-50'}`}>
           <Text className={`text-sm font-semibold ${isConnected ? 'text-green-700' : 'text-yellow-700'}`}>
             {isConnected ? '✓ ESP32 Connected' : '⚠ ESP32 Offline - Connect your device to control'}
           </Text>
@@ -145,10 +163,18 @@ export function HomeScreen() {
 
           {selectedRoom === 'LIVING ROOM' ? (
             <View className="flex-row flex-wrap gap-3">
-              <DoorCard isLocked={doorLocked} onToggle={handleDoorToggle} />
-              <FanCard isOn={fanOn} power={60} onToggle={handleFanToggle} />
-              <LightCard isOn={lightOn} power={40} onToggle={handleLightToggle} />
-              <WaterPumpCard isActive={automationActive} onToggle={handlePumpToggle} />
+              {selectedDevices.includes('door') && (
+                <DoorCard isLocked={doorLocked} onToggle={handleDoorToggle} />
+              )}
+              {selectedDevices.includes('fan') && (
+                <FanCard isOn={fanOn} power={60} onToggle={handleFanToggle} />
+              )}
+              {selectedDevices.includes('light') && (
+                <LightCard isOn={lightOn} power={40} onToggle={handleLightToggle} />
+              )}
+              {selectedDevices.includes('waterPump') && (
+                <WaterPumpCard isActive={automationActive} onToggle={handlePumpToggle} />
+              )}
             </View>
           ) : (
             <View className="py-12 items-center">
@@ -159,6 +185,14 @@ export function HomeScreen() {
       </ScrollView>
       
       <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+
+      <DeviceSelectionSheet
+        ref={bottomSheetRef}
+        selectedDevices={selectedDevices}
+        onToggleDevice={handleToggleDevice}
+        onSheetChange={(index) => setIsSheetOpen(index !== -1)}
+      />
     </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
