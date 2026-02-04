@@ -33,6 +33,9 @@ export class AuthService {
     }
 
     async sendVerificationCode(email: string): Promise<void> {
+        if (!email || !email.includes('@')) {
+            throw new BadRequestException('Invalid email address');
+        }
         const code = Math.random().toString().slice(2, 8);
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -45,12 +48,24 @@ export class AuthService {
 
         // Send email using Resend
         try {
-            await this.resend.emails.send({
-                from: 'onboarding@resend.dev',
+            const fromEmail = this.configService.get<string>('RESEND_FROM_EMAIL');
+            if (!fromEmail) {
+                throw new Error('RESEND_FROM_EMAIL is not defined in environment variables');
+            }
+
+            const response = await this.resend.emails.send({
+                from: `HomeLink <${fromEmail}>`,
                 to: email,
                 subject: 'Your HomeLink Verification Code',
                 html: `<p>Your verification code is: <strong>${code}</strong></p><p>This code will expire in 10 minutes.</p>`,
+                text: `Your verification code is: ${code}. This code will expire in 10 minutes.`,
             });
+
+            if (!response || response.error) {
+                console.error('Failed to send email:', response?.error || response);
+                throw new BadRequestException(response?.error?.message || 'Failed to send verification code');
+            }
+            console.log('Resend accepted email:', response.data?.id);
         } catch (error) {
             console.error('Failed to send email:', error);
             throw new BadRequestException('Failed to send verification code');
