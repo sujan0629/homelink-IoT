@@ -6,3 +6,4 @@ export { DoorCard } from './DoorCard';
 export { FanCard } from './FanCard';
 export { LightCard } from './LightCard';
 export { WaterPumpCard } from './WaterPumpCard';
+export { DeviceSelectionSheet } from './DeviceSelectionSheet';
