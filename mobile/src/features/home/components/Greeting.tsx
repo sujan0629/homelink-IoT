@@ -14,7 +14,7 @@ export const Greeting: React.FC<GreetingProps> = ({ userName }) => {
   };
 
   return (
-    <View className="px-6 py-4">
+    <View className="px-6 py-2">
       <Text className="text-gray-500 font-medium text-2xl">
         Good {getTimeOfDay()},
       </Text>
