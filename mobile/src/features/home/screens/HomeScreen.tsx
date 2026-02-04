@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -18,6 +18,7 @@ import { socket } from '../../../lib/socket';
 export function HomeScreen() {
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState('Home');
+  const [isConnected, setIsConnected] = useState(socket.connected);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -33,8 +34,20 @@ export function HomeScreen() {
   const [automationActive, setAutomationActive] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState('LIVING ROOM');
 
-  // Socket event handlers
+  // Socket event handlers and connection status
   useEffect(() => {
+    // Connection status handlers
+    socket.on('connect', () => {
+      setIsConnected(true);
+      console.log('ESP32 connected');
+    });
+
+    socket.on('disconnect', () => {
+      setIsConnected(false);
+      console.log('ESP32 disconnected');
+    });
+
+    // Device state handlers
     socket.on('door-on', (data: { locked: boolean }) => {
       setDoorLocked(data.locked);
     });
@@ -49,6 +62,8 @@ export function HomeScreen() {
     });
 
     return () => {
+      socket.off('connect');
+      socket.off('disconnect');
       socket.off('door-pump-on');
       socket.off('fan-on');
       socket.off('light-on');
@@ -57,21 +72,37 @@ export function HomeScreen() {
   }, []);
 
   const handleDoorToggle = (value: boolean) => {
+    if (!isConnected) {
+      Alert.alert('Device Offline', 'ESP32 is not connected. Please connect your device first.');
+      return;
+    }
     setDoorLocked(value);
     socket.emit('toggle-door', { locked: value });
   };
 
   const handleFanToggle = (value: boolean) => {
+    if (!isConnected) {
+      Alert.alert('Device Offline', 'ESP32 is not connected. Please connect your device first.');
+      return;
+    }
     setFanOn(value);
     socket.emit('toggle-fan', { on: value });
   };
 
   const handleLightToggle = (value: boolean) => {
+    if (!isConnected) {
+      Alert.alert('Device Offline', 'ESP32 is not connected. Please connect your device first.');
+      return;
+    }
     setLightOn(value);
     socket.emit('toggle-light', { on: value });
   };
 
   const handlePumpToggle = (value: boolean) => {
+    if (!isConnected) {
+      Alert.alert('Device Offline', 'ESP32 is not connected. Please connect your device first.');
+      return;
+    }
     setAutomationActive(value);
     socket.emit('toggle-pump', { active: value });
   };
@@ -88,6 +119,13 @@ export function HomeScreen() {
             console.log('Select house');
           }}
         />
+
+        {/* Connection Status */}
+        <View className={`mx-6 mb-4 p-3 rounded-lg ${isConnected ? 'bg-green-50' : 'bg-yellow-50'}`}>
+          <Text className={`text-sm font-semibold ${isConnected ? 'text-green-700' : 'text-yellow-700'}`}>
+            {isConnected ? '✓ ESP32 Connected' : '⚠ ESP32 Offline - Connect your device to control'}
+          </Text>
+        </View>
 
         {/* Greeting */}
         <Greeting userName="Sujan" />
