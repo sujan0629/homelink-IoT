@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import type {DHT22Data} from "@shared/src/types/DHT22/DHT22"
+import type { DHT22Data } from '@shared/src/types/DHT22/DHT22';
 
 import {
   HouseSelector,
@@ -139,7 +139,6 @@ export function HomeScreen() {
       return;
     }
 
-  const handleDoorToggle = (value: boolean) => {
     setDoorLocked(value);
     // Send 'open' command (inverted logic: locked=true means open=false)
     socket.emit('toogle_door', { open: !value });
@@ -156,7 +155,6 @@ export function HomeScreen() {
       return;
     }
 
-  const handleFanToggle = (value: boolean) => {
     setFanOn(value);
     socket.emit('toggle-fan', { on: value });
   };
@@ -172,7 +170,6 @@ export function HomeScreen() {
       return;
     }
 
-  const handleLightToggle = (value: boolean) => {
     setLightOn(value);
     socket.emit('toggle_light', { on: value });
   };
@@ -188,7 +185,6 @@ export function HomeScreen() {
       return;
     }
 
-  const handlePumpToggle = (value: boolean) => {
     setAutomationActive(value);
     socket.emit('toggle-pump', { active: value });
   };
