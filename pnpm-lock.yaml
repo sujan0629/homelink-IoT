@@ -206,6 +206,9 @@ importers:
         version: 15.0.8(expo@54.0.33(@babel/core@7.29.0)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       expo-linking:
         specifier: ~8.0.10
+        version: 8.0.11(expo@54.0.31)(react-native@0.81.5)(react@19.1.0)
+      expo-local-authentication:
+        specifier: ^17.0.8
         version: 8.0.11(expo@54.0.33(@babel/core@7.29.0)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       expo-splash-screen:
         specifier: ^31.0.12
@@ -9791,7 +9794,18 @@ snapshots:
       - expo
       - supports-color
 
-  expo-modules-autolinking@3.0.24:
+  /expo-local-authentication@17.0.8(expo@54.0.31):
+    resolution: {integrity: sha512-Q5fXHhu6w3pVPlFCibU72SYIAN+9wX7QpFn9h49IUqs0Equ44QgswtGrxeh7fdnDqJrrYGPet5iBzjnE70uolA==}
+    peerDependencies:
+      expo: '*'
+    dependencies:
+      expo: 54.0.31(@babel/core@7.28.6)(react-native-webview@13.15.0)(react-native@0.81.5)(react@19.1.0)
+      invariant: 2.2.4
+    dev: false
+
+  /expo-modules-autolinking@3.0.24:
+    resolution: {integrity: sha512-TP+6HTwhL7orDvsz2VzauyQlXJcAWyU3ANsZ7JGL4DQu8XaZv/A41ZchbtAYLfozNA2Ya1Hzmhx65hXryBMjaQ==}
+    hasBin: true
     dependencies:
       '@expo/spawn-async': 1.7.2
       chalk: 4.1.2

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import * as LocalAuthentication from 'expo-local-authentication';
 import type {DHT22Data} from "@shared/src/types/DHT22/DHT22"
 
 import {
@@ -16,10 +17,13 @@ import {
 } from '../components';
 import { BottomNavigation } from '../../../shared/components';
 import { socket } from '../../../lib/socket';
+import { useBiometricsStore } from '../../../stores/biometricsStore';
 
 export function HomeScreen() {
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState('Home');
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const { doorBiometrics, fanBiometrics, lightBiometrics, pumpBiometrics } = useBiometricsStore();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -78,21 +82,111 @@ export function HomeScreen() {
     };
   }, []);
 
+  const requestBiometrics = async (title: string) => {
+    const [hasHardware, supportedTypes, isEnrolled] = await Promise.all([
+      LocalAuthentication.hasHardwareAsync(),
+      LocalAuthentication.supportedAuthenticationTypesAsync(),
+      LocalAuthentication.isEnrolledAsync(),
+    ]);
+
+    const supportsFaceId = supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
+    const supportsFingerprint = supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT);
+    const supportsIris = supportedTypes.includes(LocalAuthentication.AuthenticationType.IRIS);
+
+    const authLabel = supportsFaceId
+      ? 'Face ID'
+      : supportsFingerprint
+        ? 'fingerprint'
+        : supportsIris
+          ? 'iris'
+          : 'device passcode';
+
+    if (!hasHardware && !supportsFaceId && !supportsFingerprint && !supportsIris) {
+      Alert.alert('Biometrics unavailable', 'Biometric authentication is not available. You can still use your device passcode.');
+    } else if (!isEnrolled) {
+      Alert.alert('No biometrics enrolled', 'Set up Face ID or fingerprint to use biometrics, or continue with passcode.');
+    }
+
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: `Authenticate with ${authLabel} to ${title}`,
+      cancelLabel: 'Cancel',
+      fallbackLabel: 'Use Passcode',
+    });
+
+    if (!result.success) {
+      Alert.alert('Authentication failed', 'Biometric verification was not successful.');
+    }
+
+    return result.success;
+  };
+
+  const verifyBiometricsIfNeeded = async (enabled: boolean, title: string) => {
+    if (!enabled) {
+      return true;
+    }
+
+    return requestBiometrics(title);
+  };
+
+  const handleDoorToggle = async (value: boolean) => {
+    if (!isConnected) {
+      Alert.alert('Device Offline', 'ESP32 is not connected. Please connect your device first.');
+      return;
+    }
+
+    const approved = await verifyBiometricsIfNeeded(doorBiometrics, value ? 'unlock the door' : 'lock the door');
+    if (!approved) {
+      return;
+    }
+
   const handleDoorToggle = (value: boolean) => {
     setDoorLocked(value);
     // Send 'open' command (inverted logic: locked=true means open=false)
     socket.emit('toogle_door', { open: !value });
   };
 
+  const handleFanToggle = async (value: boolean) => {
+    if (!isConnected) {
+      Alert.alert('Device Offline', 'ESP32 is not connected. Please connect your device first.');
+      return;
+    }
+
+    const approved = await verifyBiometricsIfNeeded(fanBiometrics, value ? 'turn on the fan' : 'turn off the fan');
+    if (!approved) {
+      return;
+    }
+
   const handleFanToggle = (value: boolean) => {
     setFanOn(value);
     socket.emit('toggle-fan', { on: value });
   };
 
+  const handleLightToggle = async (value: boolean) => {
+    if (!isConnected) {
+      Alert.alert('Device Offline', 'ESP32 is not connected. Please connect your device first.');
+      return;
+    }
+
+    const approved = await verifyBiometricsIfNeeded(lightBiometrics, value ? 'turn on the light' : 'turn off the light');
+    if (!approved) {
+      return;
+    }
+
   const handleLightToggle = (value: boolean) => {
     setLightOn(value);
     socket.emit('toggle_light', { on: value });
   };
+
+  const handlePumpToggle = async (value: boolean) => {
+    if (!isConnected) {
+      Alert.alert('Device Offline', 'ESP32 is not connected. Please connect your device first.');
+      return;
+    }
+
+    const approved = await verifyBiometricsIfNeeded(pumpBiometrics, value ? 'turn on the water pump' : 'turn off the water pump');
+    if (!approved) {
+      return;
+    }
 
   const handlePumpToggle = (value: boolean) => {
     setAutomationActive(value);

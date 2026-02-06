@@ -14,7 +14,10 @@
       "backgroundColor": "#0a1a0a"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Use Face ID to confirm device actions."
+      }
     },
     "android": {
       "adaptiveIcon": {

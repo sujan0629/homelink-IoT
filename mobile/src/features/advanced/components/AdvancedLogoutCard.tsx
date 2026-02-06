@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, Alert } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '../../../stores/authStore';
 
 interface AdvancedLogoutCardProps {}
@@ -40,12 +41,10 @@ export const AdvancedLogoutCard: React.FC<AdvancedLogoutCardProps> = () => {
         onPress={handleLogout}
         className="bg-red-50 border border-red-200 rounded-lg p-4 active:bg-red-100"
       >
-        <Text className="text-red-600 text-center font-semibold text-base">
-          Logout
-        </Text>
-        <Text className="text-red-500 text-center text-sm mt-1">
-          Sign out and return to welcome screen
-        </Text>
+        <View className="flex-row items-center gap-2">
+          <MaterialCommunityIcons name="logout" size={20} color="#DC2626" />
+          <Text className="text-red-600 font-semibold text-base">Logout</Text>
+        </View>
       </Pressable>
     </View>
   );
