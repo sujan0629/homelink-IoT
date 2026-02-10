@@ -2,24 +2,46 @@ import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import type { EnvironmentHistory } from '@shared/src/types/Statistics/Statistics';
 
 interface EnvironmentChartProps {
   title?: string;
+  data?: EnvironmentHistory[];
 }
 
 const screenWidth = Dimensions.get('window').width;
 
-export function EnvironmentChart({ title = "Temperature & Humidity" }: EnvironmentChartProps) {
+export function EnvironmentChart({ title = "Temperature & Humidity", data }: EnvironmentChartProps) {
+  const formatTime = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours}${ampm}`;
+  };
+  
+  const labels = data && data.length > 0 
+    ? data.map(d => formatTime(d.timestamp))
+    : ['12am', '4am', '8am', '12pm', '4pm', '8pm'];
+  
+  const temperatures = data && data.length > 0
+    ? data.map(d => d.temperature)
+    : [22, 21, 23, 26, 25, 24];
+  
+  const humidities = data && data.length > 0
+    ? data.map(d => d.humidity)
+    : [65, 68, 62, 58, 60, 63];
+  
   const chartData = {
-    labels: ['12am', '4am', '8am', '12pm', '4pm', '8pm'],
+    labels: labels,
     datasets: [
       {
-        data: [22, 21, 23, 26, 25, 24],
+        data: temperatures,
         color: (opacity = 1) => `rgba(28, 85, 94, ${opacity})`,
         strokeWidth: 2,
       },
       {
-        data: [65, 68, 62, 58, 60, 63],
+        data: humidities,
         color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`,
         strokeWidth: 2,
       },

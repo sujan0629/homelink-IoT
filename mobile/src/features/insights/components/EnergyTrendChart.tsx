@@ -5,16 +5,19 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface EnergyTrendChartProps {
   title?: string;
+  data?: number[];
 }
 
 const screenWidth = Dimensions.get('window').width;
 
-export function EnergyTrendChart({ title = "Energy Usage This Week" }: EnergyTrendChartProps) {
+export function EnergyTrendChart({ title = "Energy Usage This Week", data }: EnergyTrendChartProps) {
+  const weeklyData = data && data.length === 7 ? data : [0, 0, 0, 0, 0, 0, 0];
+  
   const chartData = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
-        data: [18, 22, 15, 28, 20, 24, 18],
+        data: weeklyData,
         color: (opacity = 1) => `rgba(28, 85, 94, ${opacity})`,
         strokeWidth: 3,
       },

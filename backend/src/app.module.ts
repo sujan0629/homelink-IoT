@@ -9,6 +9,8 @@ import { DoorGateway } from './door/door.gateway';
 import { EnvironmentGateway } from './environment/environment.gateway';
 import { AuthModule } from './auth/auth.module';
 import { FanGateway } from './fan/fan.gateway';
+import { StatisticsModule } from './statistics/statistics.module';
+import { EnvironmentModule } from './environment/environment.module';
 
 @Module({
     imports: [
@@ -17,8 +19,10 @@ import { FanGateway } from './fan/fan.gateway';
         }),
         MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/homelink'),
         AuthModule,
+        StatisticsModule,
+        EnvironmentModule,
     ],
     controllers: [AppController],
-    providers: [AppService, SocketConnectionGateway, EnvironmentGateway, LightGateway, DoorGateway, FanGateway],
+    providers: [AppService, SocketConnectionGateway, LightGateway, DoorGateway, FanGateway],
 })
 export class AppModule { }

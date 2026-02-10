@@ -2,19 +2,31 @@ import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import type { DeviceUsageStats } from '@shared/src/types/Statistics/Statistics';
 
 interface DeviceUsageChartProps {
   title?: string;
+  data?: DeviceUsageStats[];
 }
 
 const screenWidth = Dimensions.get('window').width;
 
-export function DeviceUsageChart({ title = "Top Devices by Usage" }: DeviceUsageChartProps) {
+export function DeviceUsageChart({ title = "Top Devices by Usage", data }: DeviceUsageChartProps) {
+  const deviceLabels: { [key: string]: string } = {
+    'light': 'Lights',
+    'fan': 'Fan',
+    'door': 'Door',
+    'waterPump': 'Pump',
+  };
+  
+  const labels = data?.map(d => deviceLabels[d.deviceType] || d.deviceType) || ['Lights', 'Fan', 'Door', 'Pump'];
+  const values = data?.map(d => d.totalHours) || [0, 0, 0, 0];
+  
   const chartData = {
-    labels: ['Lights', 'AC', 'Fan', 'Pump', 'Door'],
+    labels: labels.slice(0, 5),
     datasets: [
       {
-        data: [45, 68, 32, 28, 15],
+        data: values.slice(0, 5).length > 0 ? values.slice(0, 5) : [0],
       },
     ],
   };

@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
-const API_URL = 'http://10.57.141.155:3000';
+const API_URL = 'http://10.172.159.204:3000';
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
