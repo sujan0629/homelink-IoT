@@ -1,84 +1,41 @@
-# HomeLink
+# HomeLink · connected-home system
 
-*Project - Kathmandu University (2nd Year, 1st Semester)*
+Remote device control and environmental monitoring across an ESP32, a NestJS/Socket.IO backend, and a React Native mobile client.
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![React Native](https://img.shields.io/badge/React%20Native-0.72+-blue.svg)](https://reactnative.dev/)
-[![pnpm](https://img.shields.io/badge/pnpm-10+-red.svg)](https://pnpm.io/)
-[![Turbo](https://img.shields.io/badge/Turbo-2+-orange.svg)](https://turbo.build/)
+<img src="https://github.com/user-attachments/assets/7bbe527c-9f92-4080-8111-cb126b52a9b1" alt="HomeLink mobile screen 1" width="240" />
+<img src="https://github.com/user-attachments/assets/840611e9-eebb-48e8-94d4-dcfb35b44576" alt="HomeLink mobile screen 2" width="240" />
+<img src="https://github.com/user-attachments/assets/391a363f-43ae-47ea-9e06-60ff0998277f" alt="HomeLink mobile screen 3" width="240" />
 
-An IoT-based smart home automation system that enables remote monitoring and control of household utilities through a mobile application.
+## What the system connects
 
-## Features
-
-- **Remote Control**: Control lights, fans and electronic door locks from your smartphone.
-- **Real-time Monitoring**: Live status of lights and door of house.
-- **Multi-device Support**: Manage multiple rooms and devices simultaneously.
-
-## Mobile APP UI
-
-<img width="240" height="450" alt="image" src="https://github.com/user-attachments/assets/7bbe527c-9f92-4080-8111-cb126b52a9b1" />
-<img width="240" height="450" alt="image" src="https://github.com/user-attachments/assets/840611e9-eebb-48e8-94d4-dcfb35b44576" />
-<img width="240" height="450" alt="image" src="https://github.com/user-attachments/assets/391a363f-43ae-47ea-9e06-60ff0998277f" />
-
-
+- **Hardware:** ESP32 firmware, a DHT22 sensor, and device-control pins for lights, a fan, and a door mechanism.
+- **Backend:** NestJS modules for authentication, device/environment handling, MongoDB persistence, and Socket.IO communication.
+- **Mobile:** an Expo/React Native interface for monitoring and control.
+- **Workspace:** pnpm and Turborepo coordinate backend, mobile, and shared code.
 
 ## Architecture
 
-HomeLink uses a three-tier architecture:
-
-- **Hardware Layer**: ESP32-D0WD-V3 DevKit board, DHT-22 module, Relay Modules , Resistors , LED lights.
-- **Backend Layer**: C++ (Arduino IDE) , Node.js (Express.js (REST API).
-Socket.IO
-- **Frontend Layer**: React Native app for cross-platform user interface
-
-## Hardware Requirements
-
-| Component | Specification |
-|-----------|---------------|
-| Microcontroller | ESP32 DevKit (Wi-Fi enabled) |
-| Relay Modules | 4-channel 5V relay board |
-| Sensors | DHT-22 module |
-| Server | Standard PC |
-| Mobile | Android 8.0+ or iOS 12.0+ |
-
-## API Documentation
-
-### WebSocket Events
-
-- `control-device`: Send control commands to devices
-- `device-state-changed`: Receive device state updates
-- `status-update`: Device status broadcasts
-
-## Development
-
-### Project Structure
-
-```
-homelink/
-├── backend/          # Express.js server
-│   ├── package.json
-│   └── src/          # Backend source code
-├── mobile/           # React Native app
-│   ├── package.json
-│   ├── src/
-│   │   └── app/      # Expo Router pages
-│   └── assets/       # App assets
-├── esp32/            # ESP32 firmware
-├── package.json      # Root monorepo config
-├── pnpm-workspace.yaml
-├── turbo.json        # Turbo configuration
-└── README.md
+```text
+ESP32 firmware <-> Socket.IO / NestJS API <-> React Native client
+                              |
+                           MongoDB
 ```
 
-## License
+The firmware is in [esp32](esp32), API modules in [backend/src](backend/src), and the mobile application in [mobile](mobile). Check the gateways and firmware for the actual event names rather than assuming a generic Socket.IO protocol.
 
-This is a college project developed at Kathmandu University (2nd year, 1st semester - 3rd semester total) for educational purposes. Not intended for commercial use.
+## Local development
 
-## Acknowledgments
+Use the pnpm version declared in [package.json](package.json). Install dependencies at the root and start the workspace:
 
-- Built for educational purposes to demonstrate full-stack IoT development
-- Uses modern JavaScript stack from embedded systems to mobile applications
+```bash
+pnpm install
+pnpm dev
+```
 
-## Contact
-For questions or support, please open an issue on GitHub.
+Configure a development MongoDB connection via `MONGODB_URI` and review [authentication setup](AUTHENTICATION.md) before connecting clients. The backend supports `PORT` configuration. A physical phone and the ESP32 need a reachable LAN address, not the development computer's localhost.
+
+Open [the firmware](esp32/hardware/hardware.ino) in the Arduino toolchain with ESP32 support and its Socket.IO, ArduinoJson, and DHT dependencies. Set your own network/server configuration and verify pin assignments against your hardware. Use low-voltage test loads when developing device control.
+
+## Scope and history
+
+This repository demonstrates the hardware/backend/mobile integration. Deployment, network access controls, credentials, and physical wiring need review for a real installation. Existing project attribution and the original educational/non-commercial usage statement are preserved in [project history](docs/PROJECT-HISTORY.md).
